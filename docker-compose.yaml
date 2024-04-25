@@ -7,3 +7,15 @@ services:
     volumes:
       - .:/usr/src/app
     command: go run .
+  db:
+    image: postgres:alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cars
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:
