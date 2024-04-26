@@ -1,9 +1,15 @@
 package main
 
 import (
+	"cars/internal/database"
 	"fmt"
+	"time"
 )
 
 func main() {
-	fmt.Println("Init test task effective mobile")
+	time.NewTimer(time.Second * 2).Stop()
+	_, err := database.NewPostgresDB()
+	if err != nil {
+		fmt.Println(err)
+	}
 }
