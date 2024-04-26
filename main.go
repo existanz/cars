@@ -3,13 +3,13 @@ package main
 import (
 	"cars/internal/database"
 	"fmt"
-	"time"
 )
 
 func main() {
-	time.NewTimer(time.Second * 2).Stop()
-	_, err := database.NewPostgresDB()
+	// time.NewTimer(time.Second * 1).Stop()
+	db, err := database.NewPostgresDB()
 	if err != nil {
 		fmt.Println(err)
 	}
+	database.Migrate(db)
 }
