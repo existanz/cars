@@ -13,6 +13,7 @@ import (
 
 type CardyB interface {
 	AddNewCar(car model.Car) error
+	GetCars() ([]model.Car, error) // TODO: add pagination, filter, sort
 	GetCarById(id int) (model.Car, error)
 	GetCarByRegNum(regNum string) (model.Car, error)
 	GetCarsByOwner(id int) ([]model.Car, error)
@@ -33,6 +34,22 @@ func (db PostgresDB) AddNewCar(car model.Car) error {
 		return err
 	}
 	return nil
+}
+
+func (db PostgresDB) GetCars() ([]model.Car, error) {
+	var cars []model.Car
+	rows, err := db.Query("SELECT * FROM cars")
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var car model.Car
+		if err := rows.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Id); err != nil {
+			return nil, err
+		}
+		cars = append(cars, car)
+	}
+	return cars, nil
 }
 
 func (db PostgresDB) GetCarById(id int) (model.Car, error) {

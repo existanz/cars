@@ -2,6 +2,7 @@ package main
 
 import (
 	"cars/internal/database"
+	"cars/internal/rest"
 	"fmt"
 	"os"
 
@@ -17,4 +18,6 @@ func main() {
 		fmt.Println(err)
 	}
 	database.Migrate(db)
+
+	rest.StartServer(rest.NewRouter(), os.Getenv("APP_PORT"))
 }
