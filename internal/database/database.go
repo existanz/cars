@@ -2,8 +2,11 @@ package database
 
 import (
 	model "cars/internal/models"
+	"cars/internal/rest/query"
 	"database/sql"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -13,7 +16,7 @@ import (
 
 type CardyB interface {
 	AddNewCar(car model.Car) error
-	GetCars() ([]model.Car, error) // TODO: add pagination, filter, sort
+	GetCars(paginator query.Paginator, filters []query.Filter) ([]model.Car, error)
 	GetCarById(id int) (model.Car, error)
 	GetCarByRegNum(regNum string) (model.Car, error)
 	GetCarsByOwner(id int) ([]model.Car, error)
@@ -36,9 +39,10 @@ func (db PostgresDB) AddNewCar(car model.Car) error {
 	return nil
 }
 
-func (db PostgresDB) GetCars() ([]model.Car, error) {
+func (db PostgresDB) GetCars(paginator query.Paginator, filters []query.Filter) ([]model.Car, error) {
 	var cars []model.Car
-	rows, err := db.Query("SELECT * FROM cars")
+	query := "SELECT * FROM cars" + getPaginatorString(paginator) + getFilersString(filters)
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +54,25 @@ func (db PostgresDB) GetCars() ([]model.Car, error) {
 		cars = append(cars, car)
 	}
 	return cars, nil
+}
+
+func getFilersString(filters []query.Filter) string {
+	filtersString := ""
+	for _, filter := range filters {
+		if filter.Field == "year" {
+			from_to := strings.Split(filter.Value, ":")
+			filtersString += filter.Field + " BETWEEN " + from_to[0] + " AND " + from_to[1] + " AND "
+		}
+		filtersString += filter.Field + " = '" + filter.Value + "' AND "
+	}
+	return filtersString[:len(filtersString)-5]
+}
+
+func getPaginatorString(paginator query.Paginator) string {
+	page, _ := strconv.Atoi(paginator.Page)
+	limit, _ := strconv.Atoi(paginator.Limit)
+	offset := (page - 1) * limit
+	return " OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(limit)
 }
 
 func (db PostgresDB) GetCarById(id int) (model.Car, error) {
@@ -125,19 +148,19 @@ func (db PostgresDB) DeletePeopleById(id int) error {
 	return nil
 }
 
-func NewPostgresDB(psqlInfo string) (*sql.DB, error) {
+func NewPostgresDB(psqlInfo string) (PostgresDB, error) {
 	log.Println("Connecting to database: ", psqlInfo)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Fatalln(err)
-		return nil, err
+		return PostgresDB{nil}, err
 	}
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		return PostgresDB{nil}, err
 	}
 	log.Println("Connected!")
-	return db, nil
+	return PostgresDB{db}, nil
 }
 
 func Migrate(db *sql.DB) {
