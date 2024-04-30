@@ -27,6 +27,11 @@ func putCarsHandler(c *gin.Context) {
 	c.String(http.StatusOK, "Put cars")
 }
 
-func deleteCarsHandler(c *gin.Context) {
-	c.String(http.StatusOK, "Delete cars")
+func (router router) deleteCarHandler(c *gin.Context) {
+	err := router.db.DeleteCarById(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.String(http.StatusOK, "Car id:"+c.Param("id")+" deleted")
 }

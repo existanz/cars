@@ -21,7 +21,7 @@ func StartServer(router router, port string) {
 	router.engine.GET("/cars/:id", router.getCarByIdHandler)
 	router.engine.POST("/cars", postCarsHandler)
 	router.engine.PUT("/cars/:id", putCarsHandler)
-	router.engine.DELETE("/cars/:id", deleteCarsHandler)
+	router.engine.DELETE("/cars/:id", router.deleteCarHandler)
 
 	router.engine.Run(":" + port)
 }

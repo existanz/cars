@@ -21,7 +21,7 @@ type CardyB interface {
 	GetCarById(id int) (model.Car, error)
 	GetCarByRegNum(regNum string) (model.Car, error)
 	GetCarsByOwner(id int) ([]model.Car, error)
-	DeleteCarById(id int) error
+	DeleteCarById(id string) error
 	UpdateCarById(id int, car model.Car) error
 	AddNewPeople(people model.People) (int, error)
 	UpdatePeopleById(id int, people model.People) error
@@ -116,7 +116,7 @@ func (db PostgresDB) GetCarsByOwner(id int) ([]model.Car, error) {
 	return cars, nil
 }
 
-func (db PostgresDB) DeleteCarById(id int) error {
+func (db PostgresDB) DeleteCarById(id string) error {
 	_, err := db.Exec("DELETE FROM cars WHERE id = $1", id)
 	if err != nil {
 		return err
