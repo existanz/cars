@@ -1,18 +1,27 @@
 package rest
 
 import (
+	"cars/internal/database"
+
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter() *gin.Engine {
-	router := gin.Default()
-	router.GET("/cars", getCarsHandler)
-	router.POST("/cars", postCarsHandler)
-	router.PUT("/cars/:id", putCarsHandler)
-	router.DELETE("/cars/:id", deleteCarsHandler)
-	return router
+type router struct {
+	engine *gin.Engine
+	db     database.CardyB
 }
 
-func StartServer(router *gin.Engine, port string) {
-	router.Run(":" + port)
+func NewRouter(db database.CardyB) router {
+	engine := gin.Default()
+	return router{engine: engine, db: db}
+}
+
+func StartServer(router router, port string) {
+	router.engine.GET("/cars", router.getCarsHandler)
+	router.engine.GET("/cars/:id", router.getCarByIdHandler)
+	router.engine.POST("/cars", postCarsHandler)
+	router.engine.PUT("/cars/:id", putCarsHandler)
+	router.engine.DELETE("/cars/:id", deleteCarsHandler)
+
+	router.engine.Run(":" + port)
 }

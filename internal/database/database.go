@@ -4,6 +4,7 @@ import (
 	model "cars/internal/models"
 	"cars/internal/rest/query"
 	"database/sql"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -41,7 +42,7 @@ func (db PostgresDB) AddNewCar(car model.Car) error {
 
 func (db PostgresDB) GetCars(paginator query.Paginator, filters []query.Filter) ([]model.Car, error) {
 	var cars []model.Car
-	query := "SELECT * FROM cars" + getPaginatorString(paginator) + getFilersString(filters)
+	query := "SELECT * FROM cars" + getFilersString(filters) + getPaginatorString(paginator)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -57,15 +58,21 @@ func (db PostgresDB) GetCars(paginator query.Paginator, filters []query.Filter) 
 }
 
 func getFilersString(filters []query.Filter) string {
-	filtersString := ""
+	filtersString := " WHERE "
+	if len(filters) == 0 {
+		return ""
+	}
 	for _, filter := range filters {
-		if filter.Field == "year" {
+		if filter.Field == "year" && strings.Contains(filter.Value, ":") {
 			from_to := strings.Split(filter.Value, ":")
 			filtersString += filter.Field + " BETWEEN " + from_to[0] + " AND " + from_to[1] + " AND "
+		} else {
+			filtersString += filter.Field + " = '" + filter.Value + "' AND "
 		}
-		filtersString += filter.Field + " = '" + filter.Value + "' AND "
 	}
-	return filtersString[:len(filtersString)-5]
+	filtersString = strings.TrimSuffix(filtersString, "AND ")
+	fmt.Println(filtersString)
+	return filtersString
 }
 
 func getPaginatorString(paginator query.Paginator) string {
@@ -126,14 +133,14 @@ func (db PostgresDB) UpdateCarById(id int, car model.Car) error {
 }
 func (db PostgresDB) AddNewPeople(people model.People) (int, error) {
 	var id int
-	err := db.QueryRow("INSERT INTO people (name, surname, patronymic) VALUES ($1, $2, $3) RETURNING id", people.Name, people.Surname, people.Patronymic).Scan(&id)
+	err := db.QueryRow("INSERT INTO peoples (name, surname, patronymic) VALUES ($1, $2, $3) RETURNING id", people.Name, people.Surname, people.Patronymic).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 	return id, nil
 }
 func (db PostgresDB) UpdatePeopleById(id int, people model.People) error {
-	_, err := db.Exec("UPDATE people SET name = $1, surname = $2, patronymic = $3 WHERE id = $4", people.Name, people.Surname, people.Patronymic, id)
+	_, err := db.Exec("UPDATE peoples SET name = $1, surname = $2, patronymic = $3 WHERE id = $4", people.Name, people.Surname, people.Patronymic, id)
 	if err != nil {
 		return err
 	}
