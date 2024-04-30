@@ -18,7 +18,7 @@ import (
 type CardyB interface {
 	AddNewCar(car model.Car) error
 	GetCars(paginator query.Paginator, filters []query.Filter) ([]model.Car, error)
-	GetCarById(id int) (model.Car, error)
+	GetCarById(id string) (model.Car, error)
 	GetCarByRegNum(regNum string) (model.Car, error)
 	GetCarsByOwner(id int) ([]model.Car, error)
 	DeleteCarById(id string) error
@@ -82,7 +82,7 @@ func getPaginatorString(paginator query.Paginator) string {
 	return " OFFSET " + strconv.Itoa(offset) + " LIMIT " + strconv.Itoa(limit)
 }
 
-func (db PostgresDB) GetCarById(id int) (model.Car, error) {
+func (db PostgresDB) GetCarById(id string) (model.Car, error) {
 	var car model.Car
 	row := db.QueryRow("SELECT * FROM cars WHERE id = $1", id)
 	if err := row.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Id); err != nil {

@@ -17,7 +17,12 @@ func (router router) getCarsHandler(c *gin.Context) {
 }
 
 func (router router) getCarByIdHandler(c *gin.Context) {
-	c.String(http.StatusOK, "Get car by id:"+c.Param("id"))
+	data, err := router.db.GetCarById(c.Param("id"))
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, data)
 }
 func postCarsHandler(c *gin.Context) {
 	c.String(http.StatusOK, "Post cars")
