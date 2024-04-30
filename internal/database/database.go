@@ -42,14 +42,14 @@ func (db PostgresDB) AddNewCar(car model.Car) error {
 
 func (db PostgresDB) GetCars(paginator query.Paginator, filters []query.Filter) ([]model.Car, error) {
 	var cars []model.Car
-	query := "SELECT * FROM cars" + getFilersString(filters) + getPaginatorString(paginator)
+	query := "SELECT * FROM cars left join peoples on cars.owner_id = peoples.id" + getFilersString(filters) + getPaginatorString(paginator)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		var car model.Car
-		if err := rows.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Id); err != nil {
+		if err := rows.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Id, &car.Owner.Id, &car.Owner.Name, &car.Owner.Surname, &car.Owner.Patronymic); err != nil {
 			return nil, err
 		}
 		cars = append(cars, car)
@@ -84,8 +84,8 @@ func getPaginatorString(paginator query.Paginator) string {
 
 func (db PostgresDB) GetCarById(id string) (model.Car, error) {
 	var car model.Car
-	row := db.QueryRow("SELECT * FROM cars WHERE id = $1", id)
-	if err := row.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Id); err != nil {
+	row := db.QueryRow("SELECT * FROM cars left join peoples on cars.owner_id = peoples.id WHERE cars.id = $1", id)
+	if err := row.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year, &car.Owner.Id, &car.Owner.Id, &car.Owner.Name, &car.Owner.Surname, &car.Owner.Patronymic); err != nil {
 		return model.Car{}, err
 	}
 	return car, nil
