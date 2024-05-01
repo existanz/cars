@@ -1,0 +1,200 @@
+basePath: /cars
+definitions:
+  models.Car:
+    properties:
+      id:
+        type: integer
+      mark:
+        type: string
+      model:
+        type: string
+      owner:
+        $ref: '#/definitions/models.People'
+      regNum:
+        type: string
+      year:
+        type: integer
+    type: object
+  models.People:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a testing api for cars
+  title: Cars API
+  version: "1.0"
+paths:
+  /cars:
+    get:
+      consumes:
+      - application/json
+      description: Get cars with pagination and filters
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Registration number
+        in: query
+        name: regNum
+        type: string
+      - description: Car mark
+        in: query
+        name: mark
+        type: string
+      - description: Car model
+        in: query
+        name: model
+        type: string
+      - description: Car year
+        in: query
+        name: year
+        type: integer
+      - description: Owner id
+        in: query
+        name: ownerID
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Car'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get cars with pagination and filters
+    post:
+      consumes:
+      - application/json
+      description: Add new cars
+      operationId: add-new-cars
+      parameters:
+      - description: registration numbers
+        in: body
+        name: body
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cars added
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Add new cars
+  /cars/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a car by its ID
+      operationId: id
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Car id:{id} deleted
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Deletes a car by its ID
+    get:
+      description: Get car by id
+      operationId: id
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Car'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get car by id
+    put:
+      consumes:
+      - application/json
+      description: Update car by id
+      operationId: id
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Car data
+        in: body
+        name: car
+        required: true
+        schema:
+          $ref: '#/definitions/models.Car'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Car id:{id} updated
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update car by id
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

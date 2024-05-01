@@ -10,6 +10,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title           Cars API
+// @version         1.0
+// @description     This is a testing api for cars
+
+// @host      localhost:8080
+// @BasePath  /cars
+
+// @securityDefinitions.basic  BasicAuth
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
 	godotenv.Load()
 	sqlConnectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
