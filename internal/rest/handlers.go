@@ -2,6 +2,7 @@ package rest
 
 import (
 	"cars/internal/models"
+	externalapi "cars/internal/rest/external-api"
 	"cars/internal/rest/query"
 	"fmt"
 	"net/http"
@@ -26,9 +27,6 @@ func (router router) getCarByIdHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, data)
-}
-func postCarsHandler(c *gin.Context) {
-	c.String(http.StatusOK, "Post cars")
 }
 
 func (router router) updateCarHandler(c *gin.Context) {
@@ -69,4 +67,26 @@ func (router router) deleteCarHandler(c *gin.Context) {
 		return
 	}
 	c.String(http.StatusOK, "Car id:"+c.Param("id")+" deleted")
+}
+
+func (router router) addNewCarsHandler(c *gin.Context) {
+	var regNums struct {
+		Nums []string `json:"regNums"`
+	}
+	if err := c.ShouldBindJSON(&regNums); err != nil {
+		c.JSON(http.StatusBadRequest, "Bad request")
+		return
+	}
+	for _, regNum := range regNums.Nums {
+		car, err := externalapi.GetCarByRegNum(regNum)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		if err := router.db.AddNewCar(car); err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+	c.String(http.StatusOK, "Cars added")
 }

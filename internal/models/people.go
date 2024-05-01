@@ -6,3 +6,9 @@ type People struct {
 	Surname    string `json:"surname"`
 	Patronymic string `json:"patronymic,omitempty"`
 }
+
+type PeopleDTO struct {
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic,omitempty"`
+}

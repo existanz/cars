@@ -17,8 +17,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	database.Migrate(db.DB)
+	// database.Migrate(db.DB)
 	// database.FillTestData(db)
 
-	rest.StartServer(rest.NewRouter(), os.Getenv("APP_PORT"))
+	rest.StartServer(rest.NewRouter(db), os.Getenv("APP_PORT"))
 }

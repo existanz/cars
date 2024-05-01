@@ -33,7 +33,13 @@ type PostgresDB struct {
 }
 
 func (db PostgresDB) AddNewCar(car model.Car) error {
-	_, err := db.Exec("INSERT INTO cars (reg_num, mark, model, year, owner_id) VALUES ($1, $2, $3, $4, $5)", car.RegNum, car.Mark, car.Model, car.Year, car.Owner.Id)
+	id, err := db.AddNewPeople(car.Owner)
+	if err != nil {
+		return err
+	}
+	car.Owner.Id = id
+	fmt.Println(car)
+	_, err = db.Exec("INSERT INTO cars (reg_num, mark, model, year, owner_id) VALUES ($1, $2, $3, $4, $5)", car.RegNum, car.Mark, car.Model, car.Year, car.Owner.Id)
 	if err != nil {
 		return err
 	}
@@ -133,7 +139,12 @@ func (db PostgresDB) UpdateCarById(id int, car model.Car) error {
 }
 func (db PostgresDB) AddNewPeople(people model.People) (int, error) {
 	var id int
-	err := db.QueryRow("INSERT INTO peoples (name, surname, patronymic) VALUES ($1, $2, $3) RETURNING id", people.Name, people.Surname, people.Patronymic).Scan(&id)
+	rows, err := db.Query("SELECT TOP 1 id FROM peoples WHERE name = $1 AND surname = $2 AND patronymic = $3", people.Name, people.Surname, people.Patronymic)
+	if err == nil && rows.Next() {
+		rows.Scan(&id)
+		return id, nil
+	}
+	err = db.QueryRow("INSERT INTO peoples (name, surname, patronymic) VALUES ($1, $2, $3) RETURNING id", people.Name, people.Surname, people.Patronymic).Scan(&id)
 	if err != nil {
 		return 0, err
 	}

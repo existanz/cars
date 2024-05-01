@@ -19,7 +19,7 @@ func NewRouter(db database.CardyB) router {
 func StartServer(router router, port string) {
 	router.engine.GET("/cars", router.getCarsHandler)
 	router.engine.GET("/cars/:id", router.getCarByIdHandler)
-	router.engine.POST("/cars", postCarsHandler)
+	router.engine.POST("/cars", router.addNewCarsHandler)
 	router.engine.PUT("/cars/:id", router.updateCarHandler)
 	router.engine.DELETE("/cars/:id", router.deleteCarHandler)
 
