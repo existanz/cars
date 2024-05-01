@@ -4,6 +4,7 @@ import (
 	"cars/internal/models"
 	externalapi "cars/internal/rest/external-api"
 	"cars/internal/rest/query"
+	"sync"
 
 	"log/slog"
 
@@ -129,16 +130,22 @@ func (router router) addNewCarsHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "Bad request")
 		return
 	}
+	var wg sync.WaitGroup
 	for _, regNum := range regNums.Nums {
-		car, err := externalapi.GetCarByRegNum(regNum)
-		if err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-		if err := router.db.AddNewCar(car); err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
+		wg.Add(1)
+		go func(regNum string) {
+			defer wg.Done()
+			car, err := externalapi.GetCarByRegNum(regNum)
+			if err != nil {
+				slog.Error("error in goroutine for regNum %s: %s", regNum, err)
+				return
+			}
+			if err := router.db.AddNewCar(car); err != nil {
+				slog.Error("error in goroutine for regNum %s: %s", regNum, err)
+				return
+			}
+		}(regNum)
 	}
+	wg.Wait()
 	c.String(http.StatusOK, "Cars added")
 }

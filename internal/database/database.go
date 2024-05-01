@@ -137,7 +137,7 @@ func (db PostgresDB) UpdateCarById(id int, car model.Car) error {
 }
 func (db PostgresDB) AddNewPeople(people model.People) (int, error) {
 	var id int
-	rows, err := db.Query("SELECT TOP 1 id FROM peoples WHERE name = $1 AND surname = $2 AND patronymic = $3", people.Name, people.Surname, people.Patronymic)
+	rows, err := db.Query("SELECT id FROM peoples WHERE name = $1 AND surname = $2 AND patronymic = $3 LIMIT 1", people.Name, people.Surname, people.Patronymic)
 	if err == nil && rows.Next() {
 		rows.Scan(&id)
 		return id, nil
