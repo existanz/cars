@@ -12,6 +12,7 @@ type router struct {
 }
 
 func NewRouter(db database.CardyB) router {
+	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
 	return router{engine: engine, db: db}
 }

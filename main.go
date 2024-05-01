@@ -4,6 +4,7 @@ import (
 	"cars/internal/database"
 	"cars/internal/rest"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -15,10 +16,8 @@ func main() {
 		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 	db, err := database.NewPostgresDB(sqlConnectionString)
 	if err != nil {
-		fmt.Println(err)
+		slog.Debug("Error when connect to database", err)
 	}
-	// database.Migrate(db.DB)
-	// database.FillTestData(db)
 
 	rest.StartServer(rest.NewRouter(db), os.Getenv("APP_PORT"))
 }

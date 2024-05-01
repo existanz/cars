@@ -4,8 +4,8 @@ import (
 	model "cars/internal/models"
 	"cars/internal/rest/query"
 	"database/sql"
-	"fmt"
-	"log"
+
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -38,7 +38,6 @@ func (db PostgresDB) AddNewCar(car model.Car) error {
 		return err
 	}
 	car.Owner.Id = id
-	fmt.Println(car)
 	_, err = db.Exec("INSERT INTO cars (reg_num, mark, model, year, owner_id) VALUES ($1, $2, $3, $4, $5)", car.RegNum, car.Mark, car.Model, car.Year, car.Owner.Id)
 	if err != nil {
 		return err
@@ -77,7 +76,6 @@ func getFilersString(filters []query.Filter) string {
 		}
 	}
 	filtersString = strings.TrimSuffix(filtersString, "AND ")
-	fmt.Println(filtersString)
 	return filtersString
 }
 
@@ -167,32 +165,33 @@ func (db PostgresDB) DeletePeopleById(id int) error {
 }
 
 func NewPostgresDB(psqlInfo string) (PostgresDB, error) {
-	log.Println("Connecting to database: ", psqlInfo)
+	slog.Info("Connecting to database: ", "connection string", psqlInfo)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatalln(err)
+		slog.Error("Cold not connect to database: ", err)
 		return PostgresDB{nil}, err
 	}
 	err = db.Ping()
 	if err != nil {
 		return PostgresDB{nil}, err
 	}
-	log.Println("Connected!")
+	slog.Info("Connected! \n")
+	MigrateUp(db)
 	return PostgresDB{db}, nil
 }
 
-func Migrate(db *sql.DB) {
+func MigrateUp(db *sql.DB) {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		log.Printf("error: %v\n", err)
+		slog.Debug("Can't create driver for migration : %v\n", err)
 	}
 	m, err := migrate.NewWithDatabaseInstance(
 		"file:///app/migrations",
 		"postgres", driver)
 	if err != nil {
-		log.Printf("error: %v\n", err)
+		slog.Debug("Can't create migration : %v\n", err)
 	}
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal(err)
+		slog.Debug("Migration error: %v", err)
 	}
 }

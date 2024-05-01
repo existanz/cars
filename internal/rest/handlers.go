@@ -4,7 +4,9 @@ import (
 	"cars/internal/models"
 	externalapi "cars/internal/rest/external-api"
 	"cars/internal/rest/query"
-	"fmt"
+
+	"log/slog"
+
 	"net/http"
 	"strconv"
 
@@ -40,7 +42,6 @@ func (router router) updateCarHandler(c *gin.Context) {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	fmt.Println(car.Id)
 	if car.Id != 0 && carID != car.Id {
 		c.String(http.StatusBadRequest, "Wrong id")
 		return
@@ -52,9 +53,8 @@ func (router router) updateCarHandler(c *gin.Context) {
 	}
 	if car.Owner.Id != 0 {
 		err := router.db.UpdatePeopleById(car.Owner.Id, car.Owner)
-		fmt.Println(car.Owner)
 		if err != nil {
-			fmt.Println(fmt.Errorf("error in update people: %s", err))
+			slog.Debug("error in update people: %s", err)
 		}
 	}
 	c.String(http.StatusOK, "Car id:"+strconv.Itoa(carID)+" updated")

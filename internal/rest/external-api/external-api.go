@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 )
@@ -12,7 +13,7 @@ import (
 func GetCarByRegNum(regNum string) (models.Car, error) {
 	car := models.Car{}
 	query := fmt.Sprintf("%s%s", os.Getenv("EXTERNAL_API_URL"), regNum)
-	fmt.Println(query)
+	slog.Debug("Send request to: ", "URL", query)
 	resp, err := http.Get(query)
 	if err != nil {
 		return car, err
@@ -21,7 +22,7 @@ func GetCarByRegNum(regNum string) (models.Car, error) {
 	if err != nil || body == nil {
 		return car, err
 	}
-	fmt.Println(string(body))
+	slog.Debug("Response: ", "body", string(body))
 	if err := json.Unmarshal(body, &car); err != nil {
 		return car, err
 	}
@@ -31,6 +32,5 @@ func GetCarByRegNum(regNum string) (models.Car, error) {
 	if resp.StatusCode != http.StatusOK {
 		return car, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
-	fmt.Println("Last car:", car, "Error:", err)
 	return car, nil
 }
